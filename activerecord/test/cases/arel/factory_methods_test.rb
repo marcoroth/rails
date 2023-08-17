@@ -66,6 +66,13 @@ module Arel
         assert_equal [:one], lower.expressions.map(&:expr)
       end
 
+      def test_length
+        length = @factory.length :one
+        assert_instance_of Nodes::NamedFunction, length
+        assert_equal "LENGTH", length.name
+        assert_equal [:one], length.expressions.map(&:expr)
+      end
+
       def test_coalesce
         relation = Table.new(:users)
         field_node = relation[:active]
