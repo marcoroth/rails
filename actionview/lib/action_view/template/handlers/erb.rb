@@ -8,6 +8,7 @@ module ActionView
     module Handlers
       class ERB
         autoload :Erubi, "action_view/template/handlers/erb/erubi"
+        autoload :Herb, "action_view/template/handlers/erb/herb"
 
         # Specify trim mode for the ERB compiler. Defaults to '-'.
         # See ERB documentation for suitable values.
@@ -15,6 +16,11 @@ module ActionView
 
         # Default implementation used.
         class_attribute :erb_implementation, default: Erubi
+
+        # Use Herb for HTML templates. Defaults to false.
+        # When enabled, HTML templates will use Herb (HTML-aware ERB engine)
+        # while non-HTML templates continue using the default erb_implementation.
+        class_attribute :use_herb_for_html, default: false
 
         # Do not escape templates of these mime types.
         class_attribute :escape_ignore_list, default: ["text/plain"]
@@ -90,7 +96,14 @@ module ActionView
             options[:postamble] = "@output_buffer.safe_append='<!-- END #{template.short_identifier} -->';@output_buffer"
           end
 
-          self.class.erb_implementation.new(erb, options).src
+          # Use Herb for HTML templates if enabled, otherwise use the default implementation
+          implementation = if self.class.use_herb_for_html && template.format == :html
+                             Herb
+                           else
+                             self.class.erb_implementation
+                           end
+
+          implementation.new(erb, options).src
         end
 
       private

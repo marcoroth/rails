@@ -439,4 +439,21 @@ class TestERBTemplate < ActiveSupport::TestCase
 
     assert_equal expected, new_template(source).translate_location(nil, spot)
   end
+
+  def test_uses_erubi_by_default_for_html_templates
+    ActionView::Template::Handlers::ERB.use_herb_for_html = false
+    @template = new_template("<p><%= hello %>", format: :html)
+
+    assert_equal "<p>Hello", render
+  end
+
+  def test_uses_herb_for_html_when_enabled
+    ActionView::Template::Handlers::ERB.use_herb_for_html = true
+    @template = new_template("<p><%= hello %>", format: :html)
+    exception = assert_raises { render }
+
+    assert_includes exception.message, "Tag `<p>` opened at (1:1) was never closed before the end of document."
+  ensure
+    ActionView::Template::Handlers::ERB.use_herb_for_html = false
+  end
 end

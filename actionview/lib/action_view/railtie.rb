@@ -65,6 +65,13 @@ module ActionView
     end
 
     config.after_initialize do |app|
+      use_herb_for_html = app.config.action_view.delete(:use_herb_for_html)
+      unless use_herb_for_html.nil?
+        ActionView::Template::Handlers::ERB.use_herb_for_html = use_herb_for_html
+      end
+    end
+
+    config.after_initialize do |app|
       ActionView::Helpers::AssetTagHelper.image_loading = app.config.action_view.delete(:image_loading)
       ActionView::Helpers::AssetTagHelper.image_decoding = app.config.action_view.delete(:image_decoding)
       ActionView::Helpers::AssetTagHelper.preload_links_header = app.config.action_view.delete(:preload_links_header)
